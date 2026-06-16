@@ -275,21 +275,22 @@
       return Math.max(ctx.measureText(lines[0]).width,ctx.measureText(lines[1]).width); };
     while(widest(ffs)>greenInner && ffs>16){ ffs-=2; }
     var tCenter=(divX+gap+rightBar)/2;
+    var fw=widest(ffs);
+    var textLeft=tCenter-fw/2;
     var lh=ffs*1.04;
-    function drawFaltam(){
-      ctx.font=font(600,ffs); ctx.fillText(lines[0],tCenter,midY-lh/2);
-      ctx.font=font(700,ffs); ctx.fillText(lines[1],tCenter,midY+lh/2);
+    var tc=tCenter;
+    if(fillEnd>textLeft){
+      // O preenchimento azul alcançou o texto: deixa a letra toda branca e
+      // recua o necessário para ela ficar inteira sobre o azul (sempre legível).
+      ctx.fillStyle='#FFFFFF';
+      tc=Math.min(tCenter,fillEnd-fw/2-16);
+      tc=Math.max(tc,leftBar+fw/2+16);
+    } else {
+      // Texto ainda sobre a faixa verde: usa a cor do terreno.
+      ctx.fillStyle=T.faltam;
     }
-    // Texto legível dos dois lados da borda do preenchimento:
-    // trecho sobre o azul fica branco; trecho sobre o verde fica na cor do terreno.
-    ctx.save();
-    ctx.beginPath(); ctx.rect(leftBar,trackTop,Math.max(0,fillEnd-leftBar),trackH); ctx.clip();
-    ctx.fillStyle='#FFFFFF'; drawFaltam();
-    ctx.restore();
-    ctx.save();
-    ctx.beginPath(); ctx.rect(fillEnd,trackTop,(rightBar-fillEnd)+60,trackH); ctx.clip();
-    ctx.fillStyle=T.faltam; drawFaltam();
-    ctx.restore();
+    ctx.font=font(600,ffs); ctx.fillText(lines[0],tc,midY-lh/2);
+    ctx.font=font(700,ffs); ctx.fillText(lines[1],tc,midY+lh/2);
 
     var i,x,lab;
     ctx.font=font(500,24);
