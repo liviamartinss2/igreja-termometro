@@ -132,7 +132,6 @@
 
     <div class="actions">
       <button class="btn btn-primary" id="download">Baixar imagem</button>
-      <button class="btn btn-ghost" id="copy">Copiar imagem</button>
       <span id="status" class="status"></span>
     </div>
 
@@ -275,13 +274,22 @@
     var widest=function(fs){ ctx.font=font(700,fs);
       return Math.max(ctx.measureText(lines[0]).width,ctx.measureText(lines[1]).width); };
     while(widest(ffs)>greenInner && ffs>16){ ffs-=2; }
-    var fw=widest(ffs), fLft=(divX+gap+rightBar)/2 - fw/2;
     var tCenter=(divX+gap+rightBar)/2;
-    var overlap=Math.max(0,Math.min(fillEnd,tCenter+fw/2)-fLft);
-    ctx.fillStyle=(overlap>fw/2)?'#FFFFFF':T.faltam;
     var lh=ffs*1.04;
-    ctx.font=font(600,ffs); ctx.fillText(lines[0],tCenter,midY-lh/2);
-    ctx.font=font(700,ffs); ctx.fillText(lines[1],tCenter,midY+lh/2);
+    function drawFaltam(){
+      ctx.font=font(600,ffs); ctx.fillText(lines[0],tCenter,midY-lh/2);
+      ctx.font=font(700,ffs); ctx.fillText(lines[1],tCenter,midY+lh/2);
+    }
+    // Texto legível dos dois lados da borda do preenchimento:
+    // trecho sobre o azul fica branco; trecho sobre o verde fica na cor do terreno.
+    ctx.save();
+    ctx.beginPath(); ctx.rect(leftBar,trackTop,Math.max(0,fillEnd-leftBar),trackH); ctx.clip();
+    ctx.fillStyle='#FFFFFF'; drawFaltam();
+    ctx.restore();
+    ctx.save();
+    ctx.beginPath(); ctx.rect(fillEnd,trackTop,(rightBar-fillEnd)+60,trackH); ctx.clip();
+    ctx.fillStyle=T.faltam; drawFaltam();
+    ctx.restore();
 
     var i,x,lab;
     ctx.font=font(500,24);
@@ -328,12 +336,6 @@
       a.href=URL.createObjectURL(blob); document.body.appendChild(a); a.click(); a.remove();
       setTimeout(function(){URL.revokeObjectURL(a.href);},1000); els.status.textContent='Imagem baixada.';
     },'image/png');
-  });
-  document.getElementById('copy').addEventListener('click',function(){
-    if(!navigator.clipboard||!window.ClipboardItem){ els.status.textContent='Use Baixar imagem.'; return; }
-    cv.toBlob(function(blob){ navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){
-        els.status.textContent='Copiada! Cole no grupo.';
-      }).catch(function(){ els.status.textContent='Use Baixar imagem.'; }); },'image/png');
   });
 
   function ready(){
