@@ -81,7 +81,7 @@
     <label class="label" for="raised">Valor arrecadado este mês</label>
     <div class="moneyfield">
       <span class="pfx">R$</span>
-      <input id="raised" type="number" min="0" step="100" value="73000" inputmode="numeric">
+      <input id="raised" type="text" inputmode="numeric" value="73.000">
     </div>
     <div class="chips">
       <span class="chip a" id="chipPct">73% das despesas</span>
@@ -121,11 +121,11 @@
       <div class="grid" style="margin-top:18px">
         <div class="col">
           <label class="label" for="despesas">Despesas do mês (R$)</label>
-          <input id="despesas" type="number" min="0" step="1000" value="100000">
+          <input id="despesas" type="text" inputmode="numeric" value="100.000">
         </div>
         <div class="col">
           <label class="label" for="terreno">Meta do terreno (R$)</label>
-          <input id="terreno" type="number" min="0" step="1000" value="25000">
+          <input id="terreno" type="text" inputmode="numeric" value="25.000">
         </div>
       </div>
     </details>
@@ -186,6 +186,19 @@
   if(!els.title.value) els.title.value = todayBR();
   function brl(n){ return 'R$ '+Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
   function brl0(n){ return 'R$ '+Number(n).toLocaleString('pt-BR',{maximumFractionDigits:0}); }
+  // Campos de dinheiro: exibem pontos de milhar (120.000) e guardam só os dígitos.
+  function onlyDigits(v){ return String(v==null?'':v).replace(/\D/g,''); }
+  function numVal(el){ return Number(onlyDigits(el.value))||0; }
+  function groupTh(d){ return d.replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+  function maskMoney(el){
+    var caret=el.selectionStart||0;
+    var digitsBefore=onlyDigits(el.value.slice(0,caret)).length;
+    var s=onlyDigits(el.value).replace(/^0+(?=\d)/,'');
+    el.value=s?groupTh(s):'';
+    var pos=0,seen=0;
+    while(pos<el.value.length && seen<digitsBefore){ if(/\d/.test(el.value.charAt(pos))) seen++; pos++; }
+    try{ el.setSelectionRange(pos,pos); }catch(e){}
+  }
 
   function rr(x,y,w,h,r){ r=Math.min(r,h/2,w/2);
     ctx.beginPath(); ctx.moveTo(x+r,y);
@@ -196,9 +209,9 @@
 
   function draw(){
     var T=THEMES[current];
-    var raised=Math.max(0,Number(els.raised.value)||0);
-    var despesas=Math.max(1,Number(els.despesas.value)||1);
-    var terreno=Math.max(0,Number(els.terreno.value)||0);
+    var raised=Math.max(0,numVal(els.raised));
+    var despesas=Math.max(1,numVal(els.despesas));
+    var terreno=Math.max(0,numVal(els.terreno));
     var total=despesas+terreno;
 
     cv.height=H;
@@ -306,7 +319,11 @@
     ctx.fillStyle=T.num; ctx.fillText(lab,x,axisY+23);
   }
 
-  ['raised','title','despesas','terreno'].forEach(function(k){ els[k].addEventListener('input',draw); });
+  ['raised','despesas','terreno'].forEach(function(k){
+    maskMoney(els[k]);
+    els[k].addEventListener('input',function(){ maskMoney(els[k]); draw(); });
+  });
+  els.title.addEventListener('input',draw);
   document.getElementById('logoFile').addEventListener('change',function(e){
     var f=e.target.files&&e.target.files[0]; if(!f) return;
     var rd=new FileReader();
