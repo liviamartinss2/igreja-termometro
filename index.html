@@ -227,8 +227,6 @@
 
     ctx.fillStyle=T.title; ctx.font=font(800,70);
     setLS(0); ctx.fillText(els.title.value||'',800,startY+206);
-    ctx.font=font(500,24); ctx.fillStyle=T.caption;
-    setLS(0); ctx.fillText('Campanha de aquisição do terreno',800,startY+280);
 
     rr(leftBar,headTop,(divX-gap)-leftBar,headH,18); ctx.fillStyle=T.pillABg; ctx.fill();
     rr(divX+gap,headTop,rightBar-(divX+gap),headH,18); ctx.fillStyle=T.pillBBg; ctx.fill();
@@ -298,9 +296,6 @@
       lab=String(Math.round((despesas/10)*i/1000)); tick(T,x,axisY,lab); }
     for(i=1;i<=5;i++){ x=divX+(rightBar-divX)*(i/5);
       lab=String(Math.round((terreno/5)*i/1000)); tick(T,x,axisY,lab); }
-
-    ctx.fillStyle=T.caption; ctx.font=font(500,25);
-    ctx.fillText('Meta do mês: '+brl0(total),800,startY+682);
 
     els.chipPct.textContent=pct+'% das despesas';
     els.chipFaltam.textContent=faltam>0?('Faltam '+brl0(faltam)+' do terreno'):'Terreno completo';
